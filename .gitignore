@@ -54,3 +54,7 @@ bin/
 
 # macOS
 .DS_Store
+
+node_modules/
+app/src/main/resources/static/css/main.css
+jte-classes
