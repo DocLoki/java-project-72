@@ -7,6 +7,8 @@ import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.DirectoryCodeResolver;
 import gg.jte.resolve.ResourceCodeResolver;
+import hexlet.code.controllers.UrlController;
+import hexlet.code.repositories.UrlRepository;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinJte;
@@ -20,8 +22,10 @@ import java.sql.SQLException;
 
 public class App {
 
-    private static final Path TEMPLATES_PATH = Path.of("src", "main", "resources", "templates");
-    private static final Path STATIC_PATH = Path.of("src", "main", "resources", "static");
+    private static final Path TEMPLATES_PATH =
+            Path.of("src", "main", "resources", "templates");
+    private static final Path STATIC_PATH =
+            Path.of("src", "main", "resources", "static");
     private static final Path JTE_CLASSES_PATH = Path.of("jte-classes");
 
     private static HikariDataSource dataSource;
@@ -46,24 +50,31 @@ public class App {
     }
 
     public static Javalin getApp() {
-        var hikariConfig = new HikariConfig();
-
         String databaseUrl = System.getenv().getOrDefault(
                 "JDBC_DATABASE_URL",
                 "jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;"
         );
 
+        return getApp(databaseUrl);
+    }
+
+    public static Javalin getApp(String databaseUrl) {
+        var hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(databaseUrl);
         dataSource = new HikariDataSource(hikariConfig);
 
         try (var connection = dataSource.getConnection()) {
             String schema = readSchema();
+
             try (var statement = connection.createStatement()) {
                 statement.execute(schema);
             }
         } catch (SQLException | IOException e) {
             throw new RuntimeException("Failed to initialize database", e);
         }
+
+        var urlRepository = new UrlRepository(dataSource);
+        var urlController = new UrlController(urlRepository);
 
         return Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();
@@ -75,15 +86,17 @@ public class App {
                 config.staticFiles.add("/static", Location.CLASSPATH);
             }
 
-            config.routes.get("/", ctx -> ctx.render("index.jte"));
+            urlController.register(config);
         });
     }
 
     private static String readSchema() throws IOException {
-        try (InputStream inputStream = App.class.getClassLoader().getResourceAsStream("schema.sql")) {
+        try (InputStream inputStream =
+                     App.class.getClassLoader().getResourceAsStream("schema.sql")) {
             if (inputStream == null) {
                 throw new IOException("schema.sql not found");
             }
+
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
     }

@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("application")
+    id("jacoco")
 }
 
 group = "hexlet.code"
@@ -14,6 +15,8 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("io.javalin:javalin-testtools:7.2.4")
+
     implementation("io.javalin:javalin:7.2.4")
     implementation("org.slf4j:slf4j-simple:2.0.17")
     implementation("com.zaxxer:HikariCP:7.1.0")
@@ -25,6 +28,21 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = true
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.14"
 }
 
 application {

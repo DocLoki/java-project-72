@@ -2,6 +2,8 @@
 
 [![hexlet-check](https://github.com/DocLoki/java-project-72/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/DocLoki/java-project-72/actions)
 
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/DocLoki/java-project-72/main/.github/badges/jacoco.json)](https://github.com/DocLoki/java-project-72/actions/workflows/tests.yml)
+
 Создадите полноценное веб-приложение, которое выполняет запросы по сети и сохраняет данные в базу данных. Настроите CI и выполните деплой.
 
 Учебный проект Хекслета: https://ru.hexlet.io/programs/java
