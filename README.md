@@ -22,7 +22,7 @@ cd java-project-72
 
 ## Использование
 
-<!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
+[Page Analyzer](https://java-project-72-00wx.onrender.com/)
 
 ---
 
