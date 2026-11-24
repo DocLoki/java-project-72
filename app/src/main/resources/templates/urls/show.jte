@@ -47,6 +47,9 @@
                         <tr class="border-b border-gray-200">
                             <th class="p-3">ID</th>
                             <th class="p-3">Код ответа</th>
+                            <th class="p-3">h1</th>
+                            <th class="p-3">title</th>
+                            <th class="p-3">description</th>
                             <th class="p-3">Дата создания</th>
                         </tr>
                     </thead>
@@ -55,6 +58,9 @@
                             <tr class="border-b border-gray-200">
                                 <td class="p-3">${check.getId()}</td>
                                 <td class="p-3">${check.getStatusCode()}</td>
+                                <td class="p-3">${check.getH1() == null ? "" : check.getH1().length() > 200 ? check.getH1().substring(0, 200) + "..." : check.getH1()}</td>
+                                <td class="p-3">${check.getTitle() == null ? "" : check.getTitle().length() > 200 ? check.getTitle().substring(0, 200) + "..." : check.getTitle()}</td>
+                                <td class="p-3">${check.getDescription() == null ? "" : check.getDescription().length() > 200 ? check.getDescription().substring(0, 200) + "..." : check.getDescription()}</td>
                                 <td class="p-3">${check.getCreatedAt().toLocalDateTime().toLocalDate().toString()}</td>
                             </tr>
                         @endfor
