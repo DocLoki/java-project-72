@@ -1,3 +1,4 @@
+
 package hexlet.code;
 
 import com.zaxxer.hikari.HikariDataSource;
@@ -74,18 +75,25 @@ class AppTest {
 
             assertEquals(200, response.code());
             assertTrue(body.contains("https://example.com"));
+            assertTrue(body.contains("data-test=\"url\""));
 
             var urls = urlRepository.findAll();
 
             assertEquals(1, urls.size());
             assertEquals("https://example.com", urls.get(0).getName());
-            assertTrue(body.contains("data-test=\"url\""));
+
+            var detailResponse = client.get("/urls/" + urls.get(0).getId());
+            String detailBody = detailResponse.body().string();
+
+            assertEquals(200, detailResponse.code());
+            assertTrue(detailBody.contains("https://example.com"));
+            assertTrue(detailBody.contains("data-test=\"url\""));
         });
     }
 
     @Test
     void testCreateDuplicateUrl() throws Exception {
-        urlRepository.save("https://example.com");
+        var existingUrl = urlRepository.save("https://example.com");
 
         JavalinTest.test(app, testConfig, (server, client) -> {
             var response = client.post(
@@ -102,6 +110,13 @@ class AppTest {
 
             assertEquals(1, urls.size());
             assertEquals("https://example.com", urls.get(0).getName());
+
+            var detailResponse = client.get("/urls/" + existingUrl.getId());
+            String detailBody = detailResponse.body().string();
+
+            assertEquals(200, detailResponse.code());
+            assertTrue(detailBody.contains("https://example.com"));
+            assertTrue(detailBody.contains("data-test=\"url\""));
         });
     }
 
