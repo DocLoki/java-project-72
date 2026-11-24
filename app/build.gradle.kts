@@ -24,6 +24,9 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.8")
     implementation("gg.jte:jte:3.2.4")
     implementation("io.javalin:javalin-rendering-jte:7.2.4")
+    implementation("com.konghq:unirest-java:3.14.5")
+    implementation("org.jsoup:jsoup:1.24.1")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 tasks.test {

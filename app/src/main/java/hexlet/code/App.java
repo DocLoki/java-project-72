@@ -8,7 +8,9 @@ import gg.jte.TemplateEngine;
 import gg.jte.resolve.DirectoryCodeResolver;
 import gg.jte.resolve.ResourceCodeResolver;
 import hexlet.code.controllers.UrlController;
+import hexlet.code.repositories.UrlCheckRepository;
 import hexlet.code.repositories.UrlRepository;
+import hexlet.code.services.UrlCheckService;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinJte;
@@ -74,7 +76,14 @@ public class App {
         }
 
         var urlRepository = new UrlRepository(dataSource);
-        var urlController = new UrlController(urlRepository);
+        var urlCheckRepository = new UrlCheckRepository(dataSource);
+        var urlCheckService = new UrlCheckService();
+
+        var urlController = new UrlController(
+                urlRepository,
+                urlCheckRepository,
+                urlCheckService
+        );
 
         return Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();

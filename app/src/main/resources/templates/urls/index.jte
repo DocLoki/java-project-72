@@ -24,6 +24,8 @@
                             <th class="p-3">ID</th>
                             <th class="p-3">Имя</th>
                             <th class="p-3">Дата создания</th>
+                            <th class="p-3">Дата последней проверки</th>
+                            <th class="p-3">Код ответа</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,6 +39,16 @@
                                     >${url.getName()}</a>
                                 </td>
                                 <td class="p-3">${url.getCreatedAt().toLocalDateTime().toLocalDate().toString()}</td>
+                                <td class="p-3">
+                                    @if (url.getLastCheckCreatedAt() != null)
+                                        ${url.getLastCheckCreatedAt().toLocalDateTime().toLocalDate().toString()}
+                                    @endif
+                                </td>
+                                <td class="p-3">
+                                    @if (url.getLastCheckStatusCode() != null)
+                                        ${url.getLastCheckStatusCode()}
+                                    @endif
+                                </td>
                             </tr>
                         @endfor
                     </tbody>
