@@ -1,7 +1,7 @@
 plugins {
-    id("java")
     id("application")
     id("jacoco")
+    id("checkstyle")
 }
 
 group = "hexlet.code"
@@ -50,4 +50,9 @@ jacoco {
 
 application {
     mainClass = "hexlet.code.App"
+}
+
+checkstyle {
+    toolVersion = "10.21.2"
+    configFile = file("config/checkstyle/checkstyle.xml")
 }

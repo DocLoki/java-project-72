@@ -1,8 +1,8 @@
 
 package hexlet.code.repositories;
 
-import hexlet.code.models.UrlCheck;
 import com.zaxxer.hikari.HikariDataSource;
+import hexlet.code.models.UrlCheck;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,15 +36,17 @@ public class UrlCheckRepository extends BaseRepository {
 
             try (var generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    return new UrlCheck(
-                            generatedKeys.getLong(1),
+                    var id = generatedKeys.getLong(1);
+                    var check = new UrlCheck(
+                            id,
                             statusCode,
                             title,
                             h1,
                             description,
-                            urlId,
-                            findCreatedAt(generatedKeys.getLong(1))
+                            urlId
                     );
+                    check.setCreatedAt(findCreatedAt(id).toLocalDateTime());
+                    return check;
                 }
             }
         }
@@ -84,7 +86,7 @@ public class UrlCheckRepository extends BaseRepository {
                 resultSet.getString("h1"),
                 resultSet.getString("description"),
                 resultSet.getLong("url_id"),
-                resultSet.getTimestamp("created_at")
+                resultSet.getTimestamp("created_at").toLocalDateTime()
         );
     }
 

@@ -26,7 +26,7 @@
                     </tr>
                     <tr class="border-b border-gray-200">
                         <td class="p-3 font-medium">Дата создания</td>
-                        <td class="p-3">${url.getCreatedAt().toLocalDateTime().toLocalDate().toString()}</td>
+                        <td class="p-3">${url.getCreatedAt().toLocalDate().toString()}</td>
                     </tr>
                 </tbody>
             </table>
@@ -61,7 +61,7 @@
                                 <td class="p-3">${check.getH1() == null ? "" : check.getH1().length() > 200 ? check.getH1().substring(0, 200) + "..." : check.getH1()}</td>
                                 <td class="p-3">${check.getTitle() == null ? "" : check.getTitle().length() > 200 ? check.getTitle().substring(0, 200) + "..." : check.getTitle()}</td>
                                 <td class="p-3">${check.getDescription() == null ? "" : check.getDescription().length() > 200 ? check.getDescription().substring(0, 200) + "..." : check.getDescription()}</td>
-                                <td class="p-3">${check.getCreatedAt().toLocalDateTime().toLocalDate().toString()}</td>
+                                <td class="p-3">${check.getCreatedAt().toLocalDate().toString()}</td>
                             </tr>
                         @endfor
                     </tbody>

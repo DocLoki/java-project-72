@@ -7,6 +7,7 @@ import hexlet.code.repositories.UrlRepository;
 import hexlet.code.services.UrlCheckService;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,66 +52,61 @@ public class UrlController {
         }
     }
 
-    private void create(Context ctx) {
+    private void create(Context ctx) throws SQLException {
         String input = ctx.formParam("url");
+        URL url;
 
         try {
-            URL url = new URI(input).toURL();
-
-            if (url.getHost() == null || url.getHost().isBlank()
-                    || (!url.getProtocol().equals("http")
-                    && !url.getProtocol().equals("https"))) {
-                showInvalidUrl(ctx);
-                return;
-            }
-
-            String name = url.getProtocol() + "://" + url.getHost();
-
-            if (url.getPort() != -1) {
-                name += ":" + url.getPort();
-            }
-
-            var existingUrl = urlRepository.findByName(name);
-
-            if (existingUrl != null) {
-                ctx.sessionAttribute("flash", "Страница уже существует");
-                ctx.redirect("/urls/" + existingUrl.getId());
-                return;
-            }
-
-            var savedUrl = urlRepository.save(name);
-
-            ctx.sessionAttribute("flash", "Страница успешно добавлена");
-            ctx.redirect("/urls/" + savedUrl.getId());
-
+            url = new URI(input).toURL();
         } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
             showInvalidUrl(ctx);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return;
         }
+
+        if (url.getHost() == null || url.getHost().isBlank()
+                || (!url.getProtocol().equals("http")
+                && !url.getProtocol().equals("https"))) {
+            showInvalidUrl(ctx);
+            return;
+        }
+
+        String name = url.getProtocol() + "://" + url.getHost();
+
+        if (url.getPort() != -1) {
+            name += ":" + url.getPort();
+        }
+
+        var existingUrl = urlRepository.findByName(name).orElse(null);
+
+        if (existingUrl != null) {
+            ctx.sessionAttribute("flash", "Страница уже существует");
+            ctx.redirect("/urls/" + existingUrl.getId());
+            return;
+        }
+
+        var savedUrl = urlRepository.save(name);
+
+        ctx.sessionAttribute("flash", "Страница успешно добавлена");
+        ctx.redirect("/urls/" + savedUrl.getId());
     }
 
     private void showInvalidUrl(Context ctx) {
-        ctx.status(422);
+        ctx.status(HttpStatus.UNPROCESSABLE_CONTENT);
         ctx.render("index.jte", Map.of("flash", "Некорректный URL"));
     }
 
-    private void list(Context ctx) {
-        try {
-            var urls = urlRepository.findAll();
-            ctx.render("urls/index.jte", Map.of("urls", urls));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    private void list(Context ctx) throws SQLException {
+        var urls = urlRepository.findAll();
+        ctx.render("urls/index.jte", Map.of("urls", urls));
     }
 
-    private void show(Context ctx) {
+    private void show(Context ctx) throws SQLException {
         try {
             long id = Long.parseLong(ctx.pathParam("id"));
-            Url url = urlRepository.findById(id);
+            Url url = urlRepository.findById(id).orElse(null);
 
             if (url == null) {
-                ctx.status(404);
+                ctx.status(HttpStatus.NOT_FOUND);
                 return;
             }
 
@@ -130,25 +126,25 @@ public class UrlController {
             ctx.render("urls/show.jte", model);
 
         } catch (NumberFormatException e) {
-            ctx.status(404);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            ctx.status(HttpStatus.NOT_FOUND);
         }
     }
 
-    private void check(Context ctx) {
+    private void check(Context ctx) throws SQLException {
         try {
             long id = Long.parseLong(ctx.pathParam("id"));
-            Url url = urlRepository.findById(id);
+            Url url = urlRepository.findById(id).orElse(null);
 
             if (url == null) {
-                ctx.status(404);
+                ctx.status(HttpStatus.NOT_FOUND);
                 return;
             }
 
-            var result = urlCheckService.check(url.getName());
+            UrlCheckService.CheckResult result;
 
-            if (result == null) {
+            try {
+                result = urlCheckService.check(url.getName());
+            } catch (Exception e) {
                 ctx.sessionAttribute("flash", "Произошла ошибка при проверке");
                 ctx.redirect("/urls/" + id);
                 return;
@@ -166,9 +162,7 @@ public class UrlController {
             ctx.redirect("/urls/" + id);
 
         } catch (NumberFormatException e) {
-            ctx.status(404);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            ctx.status(HttpStatus.NOT_FOUND);
         }
     }
 }

@@ -12,6 +12,7 @@ import hexlet.code.repositories.UrlCheckRepository;
 import hexlet.code.repositories.UrlRepository;
 import hexlet.code.services.UrlCheckService;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinJte;
 
@@ -88,6 +89,11 @@ public class App {
         return Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
+
+            config.routes.exception(SQLException.class, (e, ctx) -> {
+                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+                ctx.result("Внутренняя ошибка сервера");
+            });
 
             if (isDevelopment()) {
                 config.staticFiles.add(STATIC_PATH.toString(), Location.EXTERNAL);

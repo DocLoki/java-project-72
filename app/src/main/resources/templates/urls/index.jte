@@ -1,8 +1,7 @@
-
 @import java.util.List
-@import hexlet.code.models.Url
+@import hexlet.code.models.UrlWithLastCheck
 
-@param List<Url> urls
+@param List<UrlWithLastCheck> urls
 
 @template.layout(
     pageTitle = "Сайты",
@@ -29,24 +28,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for (Url url : urls)
+                        @for (UrlWithLastCheck item : urls)
                             <tr class="border-t border-gray-200">
-                                <td class="p-3">${url.getId()}</td>
+                                <td class="p-3">${item.url().getId()}</td>
                                 <td class="p-3">
                                     <a
-                                        href="/urls/${url.getId()}"
+                                        href="/urls/${item.url().getId()}"
                                         class="text-blue-600 hover:underline"
-                                    >${url.getName()}</a>
+                                    >${item.url().getName()}</a>
                                 </td>
-                                <td class="p-3">${url.getCreatedAt().toLocalDateTime().toLocalDate().toString()}</td>
+                                <td class="p-3">${item.url().getCreatedAt().toLocalDate().toString()}</td>
                                 <td class="p-3">
-                                    @if (url.getLastCheckStatusCode() != null)
-                                        ${url.getLastCheckStatusCode()}
+                                    @if (item.lastCheckStatusCode() != null)
+                                        ${item.lastCheckStatusCode()}
                                     @endif
                                 </td>
                                 <td class="p-3">
-                                    @if (url.getLastCheckCreatedAt() != null)
-                                        ${url.getLastCheckCreatedAt().toLocalDateTime().toLocalDate().toString()}
+                                    @if (item.lastCheckCreatedAt() != null)
+                                        ${item.lastCheckCreatedAt().toLocalDate().toString()}
                                     @endif
                                 </td>
                             </tr>

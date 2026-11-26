@@ -1,5 +1,5 @@
 
-.PHONY: setup build build-css start render-start
+.PHONY: setup build build-css start render-start lint
 
 ifeq ($(OS),Windows_NT)
 GRADLEW = gradlew.bat
@@ -23,3 +23,6 @@ start:
 
 render-start:
 	./build/install/app/bin/app
+
+lint:
+	$(GRADLEW) checkstyleMain checkstyleTest

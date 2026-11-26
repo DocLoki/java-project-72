@@ -3,12 +3,14 @@ package hexlet.code.repositories;
 
 import com.zaxxer.hikari.HikariDataSource;
 import hexlet.code.models.Url;
+import hexlet.code.models.UrlWithLastCheck;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class UrlRepository extends BaseRepository {
 
@@ -16,7 +18,7 @@ public class UrlRepository extends BaseRepository {
         super(dataSource);
     }
 
-    public Url findById(long id) throws SQLException {
+    public Optional<Url> findById(long id) throws SQLException {
         String sql = "SELECT * FROM urls WHERE id = ?";
 
         try (var connection = dataSource.getConnection();
@@ -25,12 +27,14 @@ public class UrlRepository extends BaseRepository {
             statement.setLong(1, id);
 
             try (var resultSet = statement.executeQuery()) {
-                return resultSet.next() ? mapRow(resultSet) : null;
+                return resultSet.next()
+                        ? Optional.of(mapRow(resultSet))
+                        : Optional.empty();
             }
         }
     }
 
-    public Url findByName(String name) throws SQLException {
+    public Optional<Url> findByName(String name) throws SQLException {
         String sql = "SELECT * FROM urls WHERE name = ?";
 
         try (var connection = dataSource.getConnection();
@@ -39,12 +43,14 @@ public class UrlRepository extends BaseRepository {
             statement.setString(1, name);
 
             try (var resultSet = statement.executeQuery()) {
-                return resultSet.next() ? mapRow(resultSet) : null;
+                return resultSet.next()
+                        ? Optional.of(mapRow(resultSet))
+                        : Optional.empty();
             }
         }
     }
 
-    public List<Url> findAll() throws SQLException {
+    public List<UrlWithLastCheck> findAll() throws SQLException {
         String sql = """
                 SELECT
                     u.id,
@@ -61,7 +67,7 @@ public class UrlRepository extends BaseRepository {
                 ORDER BY u.created_at DESC
                 """;
 
-        List<Url> urls = new ArrayList<>();
+        List<UrlWithLastCheck> urls = new ArrayList<>();
 
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(sql);
@@ -88,7 +94,8 @@ public class UrlRepository extends BaseRepository {
 
             try (var generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    return findById(generatedKeys.getLong(1));
+                    return findById(generatedKeys.getLong(1))
+                            .orElseThrow(() -> new SQLException("Saved URL not found"));
                 }
             }
         }
@@ -100,19 +107,20 @@ public class UrlRepository extends BaseRepository {
         return new Url(
                 resultSet.getLong("id"),
                 resultSet.getString("name"),
-                resultSet.getTimestamp("created_at")
+                resultSet.getTimestamp("created_at").toLocalDateTime()
         );
     }
 
-    private Url mapRowWithLastCheck(ResultSet resultSet) throws SQLException {
+    private UrlWithLastCheck mapRowWithLastCheck(ResultSet resultSet) throws SQLException {
+        Url url = mapRow(resultSet);
         Integer statusCode = (Integer) resultSet.getObject("last_check_status_code");
 
-        return new Url(
-                resultSet.getLong("id"),
-                resultSet.getString("name"),
-                resultSet.getTimestamp("created_at"),
+        var lastCheckTimestamp = resultSet.getTimestamp("last_check_created_at");
+
+        return new UrlWithLastCheck(
+                url,
                 statusCode,
-                resultSet.getTimestamp("last_check_created_at")
+                lastCheckTimestamp != null ? lastCheckTimestamp.toLocalDateTime() : null
         );
     }
 }
