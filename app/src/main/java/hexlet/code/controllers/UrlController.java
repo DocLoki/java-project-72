@@ -8,6 +8,7 @@ import hexlet.code.services.UrlCheckService;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.NotFoundResponse;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -101,68 +102,56 @@ public class UrlController {
     }
 
     private void show(Context ctx) throws SQLException {
-        try {
-            long id = Long.parseLong(ctx.pathParam("id"));
-            Url url = urlRepository.findById(id).orElse(null);
+        long id = parseId(ctx);
+        Url url = urlRepository.findById(id).orElseThrow(NotFoundResponse::new);
 
-            if (url == null) {
-                ctx.status(HttpStatus.NOT_FOUND);
-                return;
-            }
+        var checks = urlCheckRepository.findByUrlId(id);
 
-            var checks = urlCheckRepository.findByUrlId(id);
+        String flash = ctx.sessionAttribute("flash");
+        ctx.sessionAttribute("flash", null);
 
-            String flash = ctx.sessionAttribute("flash");
-            ctx.sessionAttribute("flash", null);
+        Map<String, Object> model = new HashMap<>();
+        model.put("url", url);
+        model.put("checks", checks);
 
-            Map<String, Object> model = new HashMap<>();
-            model.put("url", url);
-            model.put("checks", checks);
-
-            if (flash != null) {
-                model.put("flash", flash);
-            }
-
-            ctx.render("urls/show.jte", model);
-
-        } catch (NumberFormatException e) {
-            ctx.status(HttpStatus.NOT_FOUND);
+        if (flash != null) {
+            model.put("flash", flash);
         }
+
+        ctx.render("urls/show.jte", model);
     }
 
     private void check(Context ctx) throws SQLException {
+        long id = parseId(ctx);
+        Url url = urlRepository.findById(id).orElseThrow(NotFoundResponse::new);
+
+        UrlCheckService.CheckResult result;
+
         try {
-            long id = Long.parseLong(ctx.pathParam("id"));
-            Url url = urlRepository.findById(id).orElse(null);
-
-            if (url == null) {
-                ctx.status(HttpStatus.NOT_FOUND);
-                return;
-            }
-
-            UrlCheckService.CheckResult result;
-
-            try {
-                result = urlCheckService.check(url.getName());
-            } catch (Exception e) {
-                ctx.sessionAttribute("flash", "Произошла ошибка при проверке");
-                ctx.redirect("/urls/" + id);
-                return;
-            }
-
-            urlCheckRepository.save(
-                    id,
-                    result.statusCode(),
-                    result.title(),
-                    result.h1(),
-                    result.description()
-            );
-
-            ctx.sessionAttribute("flash", "Страница успешно проверена");
+            result = urlCheckService.check(url.getName());
+        } catch (Exception e) {
+            ctx.sessionAttribute("flash", "Произошла ошибка при проверке");
             ctx.redirect("/urls/" + id);
+            return;
+        }
 
+        urlCheckRepository.save(
+                id,
+                result.statusCode(),
+                result.title(),
+                result.h1(),
+                result.description()
+        );
+
+        ctx.sessionAttribute("flash", "Страница успешно проверена");
+        ctx.redirect("/urls/" + id);
+    }
+
+    private long parseId(Context ctx) {
+        try {
+            return Long.parseLong(ctx.pathParam("id"));
         } catch (NumberFormatException e) {
-            ctx.status(HttpStatus.NOT_FOUND);
+            throw new NotFoundResponse();
         }
     }
 }

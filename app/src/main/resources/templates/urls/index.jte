@@ -1,5 +1,6 @@
 @import java.util.List
 @import hexlet.code.models.UrlWithLastCheck
+@import java.time.format.DateTimeFormatter
 
 @param List<UrlWithLastCheck> urls
 
@@ -37,7 +38,7 @@
                                         class="text-blue-600 hover:underline"
                                     >${item.url().getName()}</a>
                                 </td>
-                                <td class="p-3">${item.url().getCreatedAt().toLocalDate().toString()}</td>
+                                <td class="p-3">${item.url().getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}</td>
                                 <td class="p-3">
                                     @if (item.lastCheckStatusCode() != null)
                                         ${item.lastCheckStatusCode()}
@@ -45,7 +46,7 @@
                                 </td>
                                 <td class="p-3">
                                     @if (item.lastCheckCreatedAt() != null)
-                                        ${item.lastCheckCreatedAt().toLocalDate().toString()}
+                                        ${item.lastCheckCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}
                                     @endif
                                 </td>
                             </tr>

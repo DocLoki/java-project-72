@@ -9,10 +9,9 @@ public class Url {
     private String name;
     private LocalDateTime createdAt;
 
-    public Url(long id, String name, LocalDateTime createdAt) {
+    public Url(long id, String name) {
         this.id = id;
         this.name = name;
-        this.createdAt = createdAt;
     }
 
     public long getId() {
@@ -25,5 +24,9 @@ public class Url {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

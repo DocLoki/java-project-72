@@ -104,11 +104,12 @@ public class UrlRepository extends BaseRepository {
     }
 
     private Url mapRow(ResultSet resultSet) throws SQLException {
-        return new Url(
+        Url url = new Url(
                 resultSet.getLong("id"),
-                resultSet.getString("name"),
-                resultSet.getTimestamp("created_at").toLocalDateTime()
+                resultSet.getString("name")
         );
+        url.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
+        return url;
     }
 
     private UrlWithLastCheck mapRowWithLastCheck(ResultSet resultSet) throws SQLException {
